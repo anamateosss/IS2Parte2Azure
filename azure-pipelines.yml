@@ -4,49 +4,32 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-strategy:
-  matrix:
-    Python310:
-      PYTHON_VERSION: '3.10'
-    Python311:
-      PYTHON_VERSION: '3.11'
-    Python312:
-      PYTHON_VERSION: '3.12'
-  maxParallel: 3
+variables:
+  PYTHON_VERSION: '3.12'  # o la versión que usa Azure en vuestro App Service
 
 steps:
-# -------- CONFIGURAR PYTHON --------
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(PYTHON_VERSION)'
     architecture: 'x64'
 
-# -------- INSTALAR DEPENDENCIAS --------
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
     pip install unittest-xml-reporting
   displayName: 'Install prerequisites'
 
-# -------- EJECUTAR TESTS --------
 - script: |
-    python manage.py test --testrunner=xmlrunner.extra.djangotestrunner.XMLTestRunner
+    mkdir -p test-results
+    python manage.py test --testrunner=xmlrunner.extra.djangotestrunner.XMLTestRunner --output-dir test-results
   displayName: 'Run tests (JUnit XML)'
 
-# -------- PUBLICAR RESULTADOS DE TEST --------
 - task: PublishTestResults@2
   inputs:
-    testResultsFiles: '/TEST-*.xml'
+    testResultsFiles: 'test-results/TEST-*.xml'
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
 
-# -------- ASEGURAR MIGRACIONES --------
-- script: |
-    echo "Verificando que las migraciones existan..."
-    find . -type d -name "migrations" -exec ls {} \;
-  displayName: "Check migrations included"
-
-# -------- APLICAR MIGRACIONES DJANGO --------
 - script: |
     echo "Applying Django migrations..."
     python manage.py makemigrations --noinput || true
@@ -54,7 +37,6 @@ steps:
   displayName: "Apply Django migrations"
   continueOnError: true
 
-# -------- CREAR ARCHIVO PARA DESPLIEGUE --------
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
