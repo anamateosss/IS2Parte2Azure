@@ -150,4 +150,4 @@ EMAIL_HOST = 'smtp.googlemail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'relecloudgdv@gmail.com'
-EMAIL_HOST_PASSWORD = 'Relecloud1234'
+EMAIL_HOST_PASSWORD = 'xowa plcg hrjc exyv'  # token de aplicación
