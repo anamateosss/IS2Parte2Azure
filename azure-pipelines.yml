@@ -28,9 +28,20 @@ steps:
     testResultsFiles: '**/TEST-*.xml'
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
-  continueOnError: true
 
-- script: |
-    echo "Applying Django migrations..."
-    python manage.py migrate --noinput
-  displayName: 'Apply Django migrations'
+- task: ArchiveFiles@2
+  displayName: 'Archivar archivos para despliegue'
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
+- task: AzureWebApp@1
+  displayName: 'Desplegar en Azure App Service'
+  inputs:
+    azureSubscription: 'ConexionAzure'
+    appType: 'webAppLinux'
+    appName: 'ant-space-tours-mateos'
+    package: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
