@@ -6,7 +6,6 @@ pool:
 
 variables:
   PYTHON_VERSION: '3.12'
-  DJANGO_SETTINGS_MODULE: relecloud.settings
 
 steps:
 - task: UsePythonVersion@0
@@ -15,18 +14,12 @@ steps:
     architecture: 'x64'
 
 - script: |
-    echo "Using Python version:"
-    python --version
-  displayName: 'Check Python version'
-
-- script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
     pip install unittest-xml-reporting
   displayName: 'Install prerequisites'
 
 - script: |
-    echo "Running Django tests..."
     python manage.py test --testrunner=xmlrunner.extra.djangotestrunner.XMLTestRunner
   displayName: 'Run tests (JUnit XML)'
 
@@ -35,10 +28,9 @@ steps:
     testResultsFiles: '**/TEST-*.xml'
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
+  continueOnError: true
 
 - script: |
-    echo "=== APPLYING DJANGO MIGRATIONS ==="
-    python manage.py showmigrations
+    echo "Applying Django migrations..."
     python manage.py migrate --noinput
-    echo "=== MIGRATIONS FINISHED ==="
   displayName: 'Apply Django migrations'
