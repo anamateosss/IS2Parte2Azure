@@ -9,19 +9,23 @@ ReleCloud - Destinations
 <p>
 If you can imagine it, we travel to it! Below is our list of confirmed destinations.
 </p>
-<ul class="list-group">
+
+<div class="row">
     {% for destination in destinations %}
-    <a class="list-group-item list-group-item-action" href="{% url 'destination_detail' destination.id %}">
-        {{ destination }}
-    </a>
-    <p>
-        {% if destination.review_count > 0 %}
-            ⭐ {{ destination.avg_rating|floatformat:1 }}
-            ({{ destination.review_count }} opiniones)
-        {% else %}
-            Sin opiniones todavía
-        {% endif %}
-    </p>
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            {% if destination.image_url %}
+            <img src="{{ destination.image_url }}" class="card-img-top" alt="{{ destination.name }}">
+            {% else %}
+            <img src="https://via.placeholder.com/300x200.png?text=No+Image" class="card-img-top" alt="No image">
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ destination.name }}</h5>
+                <p class="card-text">{{ destination.description|truncatewords:15 }}</p>
+                <a href="{% url 'destination_detail' destination.id %}" class="btn btn-primary">View details</a>
+            </div>
+        </div>
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% endblock content %}

@@ -1,18 +1,30 @@
 {% extends 'base.html' %}
 
 {% block title %}
-ReleCloud - {{ destination }}
+ReleCloud - {{ destination.name }}
 {% endblock %}
 
 {% block content %}
-<h1>{{ destination }}</h1>
-<p>
-{{ destination.description }}
-</p>
-<p>You can explore {{ destination }} on the following cruises:</p>
-<ul class="list-group">
-    {% for cruise in destination.cruises.all %}
-    <a class="list-group-item list-group-item-action" href="{% url 'cruise_detail' cruise.id %}">{{ cruise }}</a>
-    {% endfor %}
-</ul>
+<div class="card">
+    {% if destination.image_url %}
+    <img src="{{ destination.image_url }}" class="card-img-top" alt="{{ destination.name }}">
+    {% endif %}
+    <div class="card-body">
+        <h1 class="card-title">{{ destination.name }}</h1>
+        <p class="card-text">{{ destination.description }}</p>
+
+        <p>You can explore {{ destination.name }} on the following cruises:</p>
+        <ul class="list-group">
+            {% for cruise in destination.cruises.all %}
+            <a class="list-group-item list-group-item-action" href="{% url 'cruise_detail' cruise.id %}">
+                {{ cruise.name }}
+            </a>
+            {% empty %}
+            <li class="list-group-item">No cruises currently available for this destination.</li>
+            {% endfor %}
+        </ul>
+
+        <a href="{% url 'destinations' %}" class="btn btn-secondary mt-3">Back to destinations</a>
+    </div>
+</div>
 {% endblock content %}

@@ -13,8 +13,16 @@ class Destination(models.Model):
         null=False,
         blank=False
     )
+    image_url = models.URLField(
+        max_length=300,
+        null=True,
+        blank=True,
+        help_text="URL de la imagen del destino"
+    )
+
     def __str__(self):
         return self.name
+
 
 class Cruise(models.Model):
     name = models.CharField(
@@ -32,8 +40,10 @@ class Cruise(models.Model):
         Destination,
         related_name='cruises'
     )
+
     def __str__(self):
         return self.name
+
 
 class InfoRequest(models.Model):
     name = models.CharField(
@@ -51,3 +61,6 @@ class InfoRequest(models.Model):
         Cruise,
         on_delete=models.PROTECT
     )
+
+    def __str__(self):
+        return f"{self.name} - {self.cruise}"
