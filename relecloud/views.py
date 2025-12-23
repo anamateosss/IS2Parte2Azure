@@ -47,17 +47,22 @@ class InfoRequestCreate(SuccessMessageMixin, generic.CreateView):
     fields = ['name', 'email', 'cruise', 'notes']
     success_url = reverse_lazy('index')
     success_message = 'Thank you, %(name)s! We will email you when we have more information about %(cruise)s!'
-    
+
     def form_valid(self, form):
-        # Lógica para enviar el correo
+        response = super().form_valid(form)
+
+        # Enviar el correo usando la instancia guardada
+        info_request = form.instance
         send_mail(
-            subject='Solicitud de información recibida',
+            subject=f'Solicitud de información recibida: {info_request.cruise}',
             message=(
-                f"Hola {form.cleaned_data['name']},\n\n"
-                f"Hemos recibido tu solicitud de información sobre el crucero: "
-                f"{form.cleaned_data['cruise']}. Nos pondremos en contacto contigo pronto."
+                f'Hola {info_request.name},\n\n'
+                f'Hemos recibido tu solicitud para obtener más información sobre el crucero "{info_request.cruise}". '
+                f'Nos pondremos en contacto contigo pronto.\n\n'
+                f'Mensaje adicional: {info_request.notes}'
             ),
-            from_email='relecloudgdv@gmail.com',  
-            recipient_list=[form.cleaned_data['email']],
+            from_email='relecloudgdv@gmail.com',
+            recipient_list=[info_request.email],
+            fail_silently=False,
         )
-        return super().form_valid(form)
+        return response
