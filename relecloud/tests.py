@@ -16,8 +16,6 @@ class InfoRequestTests(TestCase):
         self.cruise = Cruise.objects.create(
             name="Crucero de Prueba",
             description="Descripción crucero",
-            daily_cost=100,
-            duration=5
         )
         self.cruise.destinations.add(self.dest)
 
