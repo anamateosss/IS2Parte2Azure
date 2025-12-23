@@ -145,9 +145,13 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'relecloud', 'static', 'res', 'img')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# CONFIGURACIÓN DE EMAIL SEGURA
+# -----------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'relecloudgdv@gmail.com'
-EMAIL_HOST_PASSWORD = 'xowa plcg hrjc exyv'  # token de aplicación
+
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'relecloudgdv@gmail.com')
+
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
