@@ -15,23 +15,54 @@ strategy:
   maxParallel: 3
 
 steps:
+# -------- CONFIGURAR PYTHON --------
 - task: UsePythonVersion@0
   inputs:
     versionSpec: '$(PYTHON_VERSION)'
     architecture: 'x64'
 
+# -------- INSTALAR DEPENDENCIAS --------
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
     pip install unittest-xml-reporting
   displayName: 'Install prerequisites'
 
+# -------- EJECUTAR TESTS --------
 - script: |
     python manage.py test --testrunner=xmlrunner.extra.djangotestrunner.XMLTestRunner
   displayName: 'Run tests (JUnit XML)'
 
+# -------- PUBLICAR RESULTADOS DE TEST --------
 - task: PublishTestResults@2
   inputs:
-    testResultsFiles: '**/TEST-*.xml'
+    testResultsFiles: '/TEST-*.xml'
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
+
+# -------- ASEGURAR MIGRACIONES --------
+- script: |
+    echo "Verificando que las migraciones existan..."
+    find . -type d -name "migrations" -exec ls {} \;
+  displayName: "Check migrations included"
+
+# -------- APLICAR MIGRACIONES DJANGO --------
+- script: |
+    echo "Applying Django migrations..."
+    python manage.py makemigrations --noinput || true
+    python manage.py migrate --noinput
+  displayName: "Apply Django migrations"
+  continueOnError: true
+
+# -------- CREAR ARCHIVO PARA DESPLIEGUE --------
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+    includeRootFolder: false
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
+    replaceExistingArchive: true
+  displayName: 'Prepare deployment package'
+
+- publish: '$(Build.ArtifactStagingDirectory)'
+  artifact: drop
+  displayName: 'Publish build artifacts'
