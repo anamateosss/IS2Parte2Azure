@@ -28,3 +28,8 @@ steps:
     testResultsFiles: '**/TEST-*.xml'
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
+
+- script: |
+    echo "Applying Django migrations..."
+    python manage.py migrate --noinput
+  displayName: 'Apply Django migrations'
