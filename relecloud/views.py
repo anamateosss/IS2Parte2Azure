@@ -41,6 +41,9 @@ class CruiseDetailView(generic.DetailView):
     model = models.Cruise
     context_object_name = 'cruise'
 
+import logging
+logger = logging.getLogger(__name__)
+
 class InfoRequestCreate(SuccessMessageMixin, generic.CreateView):
     template_name = 'info_request_create.html'
     model = models.InfoRequest
@@ -51,18 +54,23 @@ class InfoRequestCreate(SuccessMessageMixin, generic.CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
 
-        # Enviar el correo usando la instancia guardada
         info_request = form.instance
-        send_mail(
-            subject=f'Solicitud de información recibida: {info_request.cruise}',
-            message=(
-                f'Hola {info_request.name},\n\n'
-                f'Hemos recibido tu solicitud para obtener más información sobre el crucero "{info_request.cruise}". '
-                f'Nos pondremos en contacto contigo pronto.\n\n'
-                f'Mensaje adicional: {info_request.notes}'
-            ),
-            from_email='relecloudgdv@gmail.com',
-            recipient_list=[info_request.email],
-            fail_silently=False,
-        )
+
+        try:
+            send_mail(
+                subject=f'Solicitud de información recibida: {info_request.cruise}',
+                message=(
+                    f'Hola {info_request.name},\n\n'
+                    f'Hemos recibido tu solicitud para obtener más información sobre el crucero "{info_request.cruise}". '
+                    f'Nos pondremos en contacto contigo pronto.\n\n'
+                    f'Mensaje adicional: {info_request.notes}'
+                ),
+                from_email='relecloudgdv@gmail.com',
+                recipient_list=[info_request.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            logger.exception("Fallo enviando email")
+            raise  
+
         return response
