@@ -14,6 +14,14 @@ If you can imagine it, we travel to it! Below is our list of confirmed destinati
     <a class="list-group-item list-group-item-action" href="{% url 'destination_detail' destination.id %}">
         {{ destination }}
     </a>
+    <p>
+        {% if destination.review_count > 0 %}
+            ⭐ {{ destination.avg_rating|floatformat:1 }}
+            ({{ destination.review_count }} opiniones)
+        {% else %}
+            Sin opiniones todavía
+        {% endif %}
+    </p>
     {% endfor %}
 </ul>
 {% endblock content %}
