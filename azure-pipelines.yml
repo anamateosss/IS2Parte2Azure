@@ -1,21 +1,17 @@
-# Python Django
-# Test a Django project on multiple versions of Python.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/python
-
 trigger:
 - main
 
 pool:
   vmImage: ubuntu-latest
+
 strategy:
   matrix:
-    Python38:
-      PYTHON_VERSION: '3.8'
-    Python39:
-      PYTHON_VERSION: '3.9'
     Python310:
       PYTHON_VERSION: '3.10'
+    Python311:
+      PYTHON_VERSION: '3.11'
+    Python312:
+      PYTHON_VERSION: '3.12'
   maxParallel: 3
 
 steps:
@@ -27,11 +23,12 @@ steps:
 - script: |
     python -m pip install --upgrade pip
     pip install -r requirements.txt
+    pip install unittest-xml-reporting
   displayName: 'Install prerequisites'
 
 - script: |
-    python manage.py test
-  displayName: 'Run tests'
+    python manage.py test --testrunner=xmlrunner.extra.djangotestrunner.XMLTestRunner
+  displayName: 'Run tests (JUnit XML)'
 
 - task: PublishTestResults@2
   inputs:
