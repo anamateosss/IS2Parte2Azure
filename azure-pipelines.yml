@@ -28,6 +28,7 @@ steps:
     testResultsFiles: '**/TEST-*.xml'
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
+  continueOnError: true
 
 - script: |
     echo "Applying Django migrations..."
