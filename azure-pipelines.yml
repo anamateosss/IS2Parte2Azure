@@ -5,7 +5,7 @@ pool:
   vmImage: ubuntu-latest
 
 variables:
-  PYTHON_VERSION: '3.12'  # o la versión que usa Azure en vuestro App Service
+  PYTHON_VERSION: '3.12'
 
 steps:
 - task: UsePythonVersion@0
@@ -20,31 +20,11 @@ steps:
   displayName: 'Install prerequisites'
 
 - script: |
-    mkdir -p test-results
-    python manage.py test --testrunner=xmlrunner.extra.djangotestrunner.XMLTestRunner --output-dir test-results
+    python manage.py test --testrunner=xmlrunner.extra.djangotestrunner.XMLTestRunner
   displayName: 'Run tests (JUnit XML)'
 
 - task: PublishTestResults@2
   inputs:
-    testResultsFiles: 'test-results/TEST-*.xml'
+    testResultsFiles: '**/TEST-*.xml'
     testRunTitle: 'Python $(PYTHON_VERSION)'
   condition: succeededOrFailed()
-
-- script: |
-    echo "Applying Django migrations..."
-    python manage.py makemigrations --noinput || true
-    python manage.py migrate --noinput
-  displayName: "Apply Django migrations"
-  continueOnError: true
-
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
-    includeRootFolder: false
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip'
-    replaceExistingArchive: true
-  displayName: 'Prepare deployment package'
-
-- publish: '$(Build.ArtifactStagingDirectory)'
-  artifact: drop
-  displayName: 'Publish build artifacts'
