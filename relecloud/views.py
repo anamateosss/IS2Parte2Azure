@@ -78,6 +78,9 @@ class DestinationReviewCreate(LoginRequiredMixin, SuccessMessageMixin, generic.C
     success_message = "¡Gracias! Tu opinión se ha guardado."
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+
         self.destination = get_object_or_404(models.Destination, pk=self.kwargs["pk"])
         has_purchased = models.Purchase.objects.filter(
             user=request.user, destination=self.destination
@@ -85,6 +88,7 @@ class DestinationReviewCreate(LoginRequiredMixin, SuccessMessageMixin, generic.C
         if not has_purchased:
             messages.error(request, "Debes haber comprado este destino para opinar.")
             return redirect("destination_detail", pk=self.destination.pk)
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -102,6 +106,9 @@ class CruiseReviewCreate(LoginRequiredMixin, SuccessMessageMixin, generic.Create
     success_message = "¡Gracias! Tu opinión se ha guardado."
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+
         self.cruise = get_object_or_404(models.Cruise, pk=self.kwargs["pk"])
         has_purchased = models.Purchase.objects.filter(
             user=request.user, cruise=self.cruise
@@ -109,6 +116,7 @@ class CruiseReviewCreate(LoginRequiredMixin, SuccessMessageMixin, generic.Create
         if not has_purchased:
             messages.error(request, "Debes haber comprado este crucero para opinar.")
             return redirect("cruise_detail", pk=self.cruise.pk)
+
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
