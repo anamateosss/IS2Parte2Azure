@@ -12,7 +12,7 @@ from django.contrib import messages
 from django.urls import reverse
 from .forms import DestinationReviewForm, CruiseReviewForm
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
+from django.db.models import Count, Avg
 
 logger = logging.getLogger(__name__)
 
@@ -24,9 +24,16 @@ def index(request):
 def about(request):
     return render(request, 'about.html')
 
-# Página de destinos (sin reviews, lista simple con imagen)
+# Página de destinos 
 def destinations(request):
-    all_destinations = models.Destination.objects.all().order_by('name')
+    all_destinations = (
+        models.Destination.objects
+        .annotate(
+            review_count=Count('reviews', distinct=True),
+            avg_rating=Avg('reviews__rating'),
+        )
+        .order_by('-review_count', '-avg_rating', 'name')
+    )
     return render(request, 'destinations.html', {'destinations': all_destinations})
 
 @login_required
