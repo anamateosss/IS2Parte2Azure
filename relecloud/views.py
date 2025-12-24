@@ -6,6 +6,11 @@ from django.contrib.messages.views import SuccessMessageMixin
 from django.conf import settings
 from django.core.mail import send_mail
 import logging
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.urls import reverse
+from .forms import DestinationReviewForm, CruiseReviewForm
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +39,7 @@ class CruiseDetailView(generic.DetailView):
     model = models.Cruise
     context_object_name = 'cruise'
 
-# Formulario de solicitud (mantiene envío de email)
+# Formulario de solicitud 
 class InfoRequestCreate(SuccessMessageMixin, generic.CreateView):
     template_name = 'info_request_create.html'
     model = models.InfoRequest
@@ -65,3 +70,51 @@ class InfoRequestCreate(SuccessMessageMixin, generic.CreateView):
             raise  
 
         return response
+
+class DestinationReviewCreate(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView):
+    template_name = "review_form.html"
+    model = models.DestinationReview
+    form_class = DestinationReviewForm
+    success_message = "¡Gracias! Tu opinión se ha guardado."
+
+    def dispatch(self, request, *args, **kwargs):
+        self.destination = get_object_or_404(models.Destination, pk=self.kwargs["pk"])
+        has_purchased = models.Purchase.objects.filter(
+            user=request.user, destination=self.destination
+        ).exists()
+        if not has_purchased:
+            messages.error(request, "Debes haber comprado este destino para opinar.")
+            return redirect("destination_detail", pk=self.destination.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.destination = self.destination
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("destination_detail", kwargs={"pk": self.destination.pk})
+
+class CruiseReviewCreate(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView):
+    template_name = "review_form.html"
+    model = models.CruiseReview
+    form_class = CruiseReviewForm
+    success_message = "¡Gracias! Tu opinión se ha guardado."
+
+    def dispatch(self, request, *args, **kwargs):
+        self.cruise = get_object_or_404(models.Cruise, pk=self.kwargs["pk"])
+        has_purchased = models.Purchase.objects.filter(
+            user=request.user, cruise=self.cruise
+        ).exists()
+        if not has_purchased:
+            messages.error(request, "Debes haber comprado este crucero para opinar.")
+            return redirect("cruise_detail", pk=self.cruise.pk)
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.cruise = self.cruise
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse("cruise_detail", kwargs={"pk": self.cruise.pk})
