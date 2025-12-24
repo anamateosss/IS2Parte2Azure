@@ -5,3 +5,6 @@ from . import models
 admin.site.register(models.Cruise)
 admin.site.register(models.Destination)
 admin.site.register(models.InfoRequest)
+admin.site.register(models.Purchase)
+admin.site.register(models.DestinationReview)
+admin.site.register(models.CruiseReview)
