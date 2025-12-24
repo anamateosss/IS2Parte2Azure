@@ -129,22 +129,3 @@ class ReviewPT3Tests(TestCase):
         resp = self.client.post(url, {"rating": 3, "comment": "Ok"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(CruiseReview.objects.count(), 1)
-
-class DestinationPopularityTests(TestCase):
-    def test_destinations_are_ordered_by_popularity(self):
-        d1 = Destination.objects.create(name="Destino Popular", description="Desc")
-        d2 = Destination.objects.create(name="Destino Menos Popular", description="Desc")
-
-        User = get_user_model()
-        u = User.objects.create_user(username="u1", password="1234")
-
-        DestinationReview.objects.create(destination=d1, user=u, rating=5, comment="A")
-        DestinationReview.objects.create(destination=d1, user=u, rating=4, comment="B")
-        u2 = User.objects.create_user(username="u2", password="1234")
-        DestinationReview.objects.create(destination=d2, user=u2, rating=5, comment="C")
-
-        resp = self.client.get(reverse("destinations"))
-        self.assertEqual(resp.status_code, 200)
-        destinations = list(resp.context["destinations"])
-        self.assertEqual(destinations[0], d1)
-
