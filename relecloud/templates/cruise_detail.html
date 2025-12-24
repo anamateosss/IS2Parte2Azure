@@ -10,7 +10,7 @@ ReleCloud - {{ cruise }}
 {{ cruise.description }}
 </p>
 
-<p>You can explore {{ cruise }} on the following cruises:</p>
+<p>You can go on the cruise {{ cruise }} to the following planets:</p>
 <ul class="list-group">
     {% for destination in cruise.destinations.all %}
         <a class="list-group-item list-group-item-action" href="{% url 'destination_detail' destination.id %}">{{ destination }}</a>

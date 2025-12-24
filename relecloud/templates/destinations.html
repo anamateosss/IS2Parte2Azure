@@ -22,6 +22,16 @@ If you can imagine it, we travel to it! Below is our list of confirmed destinati
             <div class="card-body">
                 <h5 class="card-title">{{ destination.name }}</h5>
                 <p class="card-text">{{ destination.description|truncatewords:15 }}</p>
+
+                <!-- PT4: Popularidad -->
+                <p class="mb-1">
+                  {% if destination.review_count %}
+                    ⭐ {{ destination.avg_rating|floatformat:1 }} ({{ destination.review_count }} opiniones)
+                  {% else %}
+                    Sin opiniones todavía
+                  {% endif %}
+                </p>
+
                 <a href="{% url 'destination_detail' destination.id %}" class="btn btn-primary">View details</a>
             </div>
         </div>
