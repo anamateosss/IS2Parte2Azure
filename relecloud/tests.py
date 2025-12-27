@@ -129,3 +129,34 @@ class ReviewPT3Tests(TestCase):
         resp = self.client.post(url, {"rating": 3, "comment": "Ok"})
         self.assertEqual(resp.status_code, 302)
         self.assertEqual(CruiseReview.objects.count(), 1)
+
+class DestinationPopularityPT4Tests(TestCase):
+    def test_destinations_are_ordered_by_popularity(self):
+        # 3 destinos
+        d1 = Destination.objects.create(name="Marte", description="Desc")
+        d2 = Destination.objects.create(name="Luna", description="Desc")
+        d3 = Destination.objects.create(name="Venus", description="Desc")
+
+        User = get_user_model()
+        u1 = User.objects.create_user(username="u1", password="1234")
+        u2 = User.objects.create_user(username="u2", password="1234")
+        u3 = User.objects.create_user(username="u3", password="1234")
+        u4 = User.objects.create_user(username="u4", password="1234")
+
+        # d1: 2 reviews, avg 4.5
+        DestinationReview.objects.create(destination=d1, user=u1, rating=5, comment="A")
+        DestinationReview.objects.create(destination=d1, user=u2, rating=4, comment="B")
+
+        # d2: 2 reviews, avg 3.0  (mismo count, peor avg)
+        DestinationReview.objects.create(destination=d2, user=u3, rating=3, comment="C")
+        DestinationReview.objects.create(destination=d2, user=u4, rating=3, comment="D")
+
+        # d3: 0 reviews
+
+        resp = self.client.get(reverse("destinations"))
+        self.assertEqual(resp.status_code, 200)
+
+        dests = list(resp.context["destinations"])
+        self.assertEqual(dests[0], d1)  # más popular (count=2, avg 4.5)
+        self.assertEqual(dests[1], d2)  # count=2 pero peor avg
+        self.assertEqual(dests[2], d3)  # sin opiniones
